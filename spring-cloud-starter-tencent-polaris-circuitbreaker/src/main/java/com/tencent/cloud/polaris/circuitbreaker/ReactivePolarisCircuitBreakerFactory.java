@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import org.springframework.cloud.client.circuitbreaker.ReactiveCircuitBreakerFac
 public class ReactivePolarisCircuitBreakerFactory extends
 		ReactiveCircuitBreakerFactory<PolarisCircuitBreakerConfigBuilder.PolarisCircuitBreakerConfiguration, PolarisCircuitBreakerConfigBuilder> {
 
+	private final CircuitBreakAPI circuitBreakAPI;
+	private final ConsumerAPI consumerAPI;
 	private Function<String, PolarisCircuitBreakerConfigBuilder.PolarisCircuitBreakerConfiguration> defaultConfiguration =
 			id -> {
 				String[] metadata = PolarisCircuitBreakerUtils.resolveCircuitBreakerId(id);
@@ -44,10 +46,6 @@ public class ReactivePolarisCircuitBreakerFactory extends
 						.method(metadata[2])
 						.build();
 			};
-
-	private final CircuitBreakAPI circuitBreakAPI;
-
-	private final ConsumerAPI consumerAPI;
 
 	public ReactivePolarisCircuitBreakerFactory(CircuitBreakAPI circuitBreakAPI, ConsumerAPI consumerAPI) {
 		this.circuitBreakAPI = circuitBreakAPI;

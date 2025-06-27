@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,12 +83,15 @@ public class PolarisCircuitBreakerMockServerTest {
 
 		ServiceKey serviceKey = new ServiceKey(NAMESPACE_TEST, SERVICE_CIRCUIT_BREAKER);
 
-		CircuitBreakerProto.CircuitBreakerRule.Builder circuitBreakerRuleBuilder =  CircuitBreakerProto.CircuitBreakerRule.newBuilder();
-		InputStream inputStream = PolarisCircuitBreakerMockServerTest.class.getClassLoader().getResourceAsStream("circuitBreakerRule.json");
-		String json = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines().collect(Collectors.joining(""));
+		CircuitBreakerProto.CircuitBreakerRule.Builder circuitBreakerRuleBuilder = CircuitBreakerProto.CircuitBreakerRule.newBuilder();
+		InputStream inputStream = PolarisCircuitBreakerMockServerTest.class.getClassLoader()
+				.getResourceAsStream("circuitBreakerRule.json");
+		String json = new BufferedReader(new InputStreamReader(inputStream, StandardCharsets.UTF_8)).lines()
+				.collect(Collectors.joining(""));
 		JsonFormat.parser().ignoringUnknownFields().merge(json, circuitBreakerRuleBuilder);
 		CircuitBreakerProto.CircuitBreakerRule circuitBreakerRule = circuitBreakerRuleBuilder.build();
-		CircuitBreakerProto.CircuitBreaker circuitBreaker = CircuitBreakerProto.CircuitBreaker.newBuilder().addRules(circuitBreakerRule).build();
+		CircuitBreakerProto.CircuitBreaker circuitBreaker = CircuitBreakerProto.CircuitBreaker.newBuilder()
+				.addRules(circuitBreakerRule).build();
 		namingServer.getNamingService().setCircuitBreaker(serviceKey, circuitBreaker);
 	}
 
@@ -138,7 +141,8 @@ public class PolarisCircuitBreakerMockServerTest {
 		assertThat(Mono.error(new RuntimeException("boom")).transform(it -> rcb.run(it, t -> Mono.just("fallback")))
 				.block()).isEqualTo("fallback");
 
-		assertThat(Flux.just("foobar", "hello world").transform(it -> rcb.run(it, t -> Flux.just("fallback", "fallback")))
+		assertThat(Flux.just("foobar", "hello world")
+				.transform(it -> rcb.run(it, t -> Flux.just("fallback", "fallback")))
 				.collectList().block())
 				.isEqualTo(Arrays.asList("fallback", "fallback"));
 

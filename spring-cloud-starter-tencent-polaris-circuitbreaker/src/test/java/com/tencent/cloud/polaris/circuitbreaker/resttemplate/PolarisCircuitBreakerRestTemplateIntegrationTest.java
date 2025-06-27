@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,7 +150,8 @@ public class PolarisCircuitBreakerRestTemplateIntegrationTest {
 		Utils.sleepUninterrupted(2000);
 		assertThat(restTemplateFallbackFromCode2.getForObject("/example/service/b/info", String.class)).isEqualTo("\"this is a fallback class\"");
 		Utils.sleepUninterrupted(2000);
-		assertThat(restTemplateFallbackFromCode3.getForEntity("/example/service/b/info", String.class).getStatusCode()).isEqualTo(HttpStatus.OK);
+		assertThat(restTemplateFallbackFromCode3.getForEntity("/example/service/b/info", String.class)
+				.getStatusCode()).isEqualTo(HttpStatus.OK);
 		Utils.sleepUninterrupted(2000);
 		assertThat(restTemplateFallbackFromCode4.getForObject("/example/service/b/info", String.class)).isEqualTo("fallback");
 		Utils.sleepUninterrupted(2000);

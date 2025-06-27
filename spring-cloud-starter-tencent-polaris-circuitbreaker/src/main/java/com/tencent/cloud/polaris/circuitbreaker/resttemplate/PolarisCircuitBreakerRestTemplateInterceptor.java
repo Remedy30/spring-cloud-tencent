@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class PolarisCircuitBreakerRestTemplateInterceptor implements ClientHttpR
 		this.polarisCircuitBreaker = polarisCircuitBreaker;
 		this.applicationContext = applicationContext;
 		this.circuitBreakerFactory = circuitBreakerFactory;
-		this.restTemplate =  restTemplate;
+		this.restTemplate = restTemplate;
 	}
 
 	@Override
@@ -84,7 +84,8 @@ public class PolarisCircuitBreakerRestTemplateInterceptor implements ClientHttpR
 							CircuitBreakerStatus.FallbackInfo fallbackInfo = new CircuitBreakerStatus.FallbackInfo(200, null, polarisCircuitBreaker.fallback());
 							return new PolarisCircuitBreakerHttpResponse(fallbackInfo);
 						}
-						if (!PolarisCircuitBreakerFallback.class.toGenericString().equals(polarisCircuitBreaker.fallbackClass().toGenericString())) {
+						if (!PolarisCircuitBreakerFallback.class.toGenericString()
+								.equals(polarisCircuitBreaker.fallbackClass().toGenericString())) {
 							Method method = ReflectionUtils.findMethod(PolarisCircuitBreakerFallback.class, "fallback");
 							PolarisCircuitBreakerFallback polarisCircuitBreakerFallback = applicationContext.getBean(polarisCircuitBreaker.fallbackClass());
 							return (PolarisCircuitBreakerHttpResponse) ReflectionUtils.invokeMethod(method, polarisCircuitBreakerFallback);

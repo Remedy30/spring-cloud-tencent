@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -71,9 +71,9 @@ public class PolarisCircuitBreakerUtilsTests {
 
 	@Test
 	public void testResolveCircuitBreakerId() {
-		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_svc")).isEqualTo(new String[]{NAMESPACE_TEST, "test_svc", ""});
-		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_svc#test_path")).isEqualTo(new String[]{NAMESPACE_TEST, "test_svc", "test_path"});
-		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_ns#test_svc#test_path")).isEqualTo(new String[]{"test_ns", "test_svc", "test_path"});
+		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_svc")).isEqualTo(new String[] {NAMESPACE_TEST, "test_svc", ""});
+		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_svc#test_path")).isEqualTo(new String[] {NAMESPACE_TEST, "test_svc", "test_path"});
+		assertThat(PolarisCircuitBreakerUtils.resolveCircuitBreakerId("test_ns#test_svc#test_path")).isEqualTo(new String[] {"test_ns", "test_svc", "test_path"});
 	}
 
 }

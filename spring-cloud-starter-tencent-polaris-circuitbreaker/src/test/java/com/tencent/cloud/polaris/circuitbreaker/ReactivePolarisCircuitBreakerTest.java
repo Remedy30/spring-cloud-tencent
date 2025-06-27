@@ -1,7 +1,7 @@
 /*
- * Tencent is pleased to support the open source community by making Spring Cloud Tencent available.
+ * Tencent is pleased to support the open source community by making spring-cloud-tencent available.
  *
- * Copyright (C) 2019 THL A29 Limited, a Tencent company. All rights reserved.
+ * Copyright (C) 2021 Tencent. All rights reserved.
  *
  * Licensed under the BSD 3-Clause License (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,6 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @ExtendWith(MockitoExtension.class)
 public class ReactivePolarisCircuitBreakerTest {
 
+	private static MockedStatic<ApplicationContextAwareUtils> mockedApplicationContextAwareUtils;
 	private final ApplicationContextRunner reactiveContextRunner = new ApplicationContextRunner()
 			.withConfiguration(AutoConfigurations.of(
 					PolarisContextAutoConfiguration.class,
@@ -59,8 +60,6 @@ public class ReactivePolarisCircuitBreakerTest {
 					LoadBalancerAutoConfiguration.class,
 					ReactivePolarisCircuitBreakerAutoConfiguration.class))
 			.withPropertyValues("spring.cloud.polaris.circuitbreaker.enabled=true");
-
-	private static MockedStatic<ApplicationContextAwareUtils> mockedApplicationContextAwareUtils;
 
 	@BeforeAll
 	public static void beforeClass() {
