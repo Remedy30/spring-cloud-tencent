@@ -17,11 +17,17 @@
 
 package com.tencent.cloud.tsf.demo.consumer.controller;
 
+import java.io.IOException;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.tencent.polaris.api.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.tsf.faulttolerance.annotation.TsfFaultTolerance;
+import org.springframework.cloud.tsf.faulttolerance.model.TsfFaultToleranceStragety;
 import org.springframework.tsf.core.TsfContext;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,11 +44,11 @@ public class SdkBaseTest {
 	@Autowired
 	private RestTemplate restTemplate;
 
+	private final AtomicInteger failOverCount = new AtomicInteger(0);
+
 	// 调用一次provider接口
 	@RequestMapping(value = "/echo-once/{str}", method = RequestMethod.GET)
-	public String restOnceProvider(@PathVariable String str,
-			@RequestParam(required = false) String tagName,
-			@RequestParam(required = false) String tagValue) {
+	public String restOnceProvider(@PathVariable String str, @RequestParam(required = false) String tagName, @RequestParam(required = false) String tagValue) {
 		if (!StringUtils.isEmpty(tagName)) {
 			TsfContext.putTag(tagName, tagValue);
 		}
@@ -50,5 +56,98 @@ public class SdkBaseTest {
 		String result = restTemplate.getForObject("http://provider-demo/echo/" + str, String.class);
 		LOG.info("end call echo-once, the result is : " + result);
 		return result;
+	}
+
+	// 直接失败
+	@TsfFaultTolerance(strategy = TsfFaultToleranceStragety.FAIL_FAST, fallbackMethod = "restProviderFailfast")
+	@RequestMapping(value = "/failfast/{str}", method = RequestMethod.GET)
+	public String failFast(@PathVariable String str) {
+		LOG.info("start call failfast:" + str);
+		String result = restTemplate.getForObject("http://provider-demo/error/" + str, String.class);
+		LOG.info("end call failfast-no-:" + str);
+		return result;
+	}
+
+	public String restProviderFailfast(String str) {
+		String result = "failfast-recall:" + str;
+		LOG.info(result);
+		return result;
+	}
+
+	// 回调函数restProviderFallback
+	@TsfFaultTolerance(strategy = TsfFaultToleranceStragety.FAIL_FAST, fallbackMethod = "restProviderFallback")
+	@RequestMapping(value = "/fallback/{str}", method = RequestMethod.GET)
+	public String fallBack(@PathVariable String str) {
+		LOG.info("start call fallback:" + str);
+		String result = restTemplate.getForObject("http://provider-demo/error/" + str, String.class);
+		LOG.info("end call fallback-no:" + result);
+		return result;
+	}
+
+	public String restProviderFallback(String str) {
+		String result = "fallback-recall:" + str;
+		LOG.info(result);
+		return result;
+	}
+
+	// 调用失败，容错，重试两次，总共调用三次
+	@TsfFaultTolerance(strategy = TsfFaultToleranceStragety.FAIL_OVER, maxAttempts = 2, fallbackMethod = "restProviderFailover")
+	@RequestMapping(value = "/failover/{str}", method = RequestMethod.GET)
+	public String failOver(@PathVariable String str) {
+		LOG.info("start call failover:" + str);
+		String result = restTemplate.getForObject("http://provider-demo/error/" + str, String.class);
+		LOG.info("end call failover-no:" + str);
+		return result;
+	}
+
+	public String restProviderFailover(String str) {
+		String result = "failover-recall:" + str;
+		LOG.info(result);
+		return result;
+	}
+
+	// 忽略RuntimeException异常，不触发容错，重试失效
+	@TsfFaultTolerance(strategy = TsfFaultToleranceStragety.FAIL_OVER, maxAttempts = 2, ignoreExceptions = {RuntimeException.class}, fallbackMethod = "restProviderFailoverException")
+	@RequestMapping(value = "/failover-exception/{str}", method = RequestMethod.GET)
+	public String failOverException(@PathVariable String str) throws InterruptedException {
+		String result = "";
+		LOG.info("start call failover-exception:" + str);
+		result = restTemplate.getForObject("http://provider-demo/error/" + str, String.class);
+		LOG.info("end call failover with exception:" + str);
+		return result;
+	}
+
+	public String restProviderFailoverException(String str) {
+		String result = "failover-exception-recall:" + str;
+		LOG.info(result);
+		return result;
+	}
+
+
+	@TsfFaultTolerance(strategy = TsfFaultToleranceStragety.FAIL_OVER, maxAttempts = 2, ignoreExceptions = {RuntimeException.class},
+			raisedExceptions = {Exception.class}, fallbackMethod = "restProviderFallback")
+	@RequestMapping(value = "/raisedException/{exceptionType}", method = RequestMethod.GET)
+	public String raisedException(@PathVariable String exceptionType) throws IOException, RuntimeException, TimeoutException {
+		String result = "";
+//		LOG.info("start call raisedException:" + exceptionType);
+		switch (exceptionType) {
+			case "RuntimeException":
+				LOG.info("Test failOver for raised RuntimeException");
+				throw new RuntimeException("NO");
+
+			case "TimeOutException":
+				LOG.info("Test failOver for raised TimeOutException");
+				if (failOverCount.incrementAndGet() % 3 == 0) {
+					return "failOver success,failOverCount=" + failOverCount.get();
+				}
+				throw new TimeoutException("NO");
+			default:
+				LOG.info("Test failOver for raised otherException");
+				if (failOverCount.incrementAndGet() % 3 == 0) {
+					return "failOver success,failOverCount=" + failOverCount.get();
+				}
+				throw new IOException("NO");
+		}
+
 	}
 }
